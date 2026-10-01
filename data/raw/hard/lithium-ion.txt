@@ -1,0 +1,2 @@
+Lithium-Ion Rechargeable Cells
+Lithium-ion batteries store energy by moving lithium ions between two electrodes through an electrolyte. When the cell charges, lithium ions migrate from the cathode to the anode; when it discharges, they flow back, releasing electrons that power a device. This chemistry offers high energy density and thousands of charge cycles, which is why it dominates phones, laptops, and electric vehicles. The technology keeps improving as manufacturers refine cathode materials such as nickel-manganese-cobalt and lithium-iron-phosphate.

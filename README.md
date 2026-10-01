@@ -36,13 +36,22 @@ embedding-lab/
         __init__.py
         retriever.py         # retrieve(query, model_name, top_k)
         comparison.py        # retrieve all models + overlap
+    evaluation/
+        __init__.py
+        dataset.py           # load + validate golden questions
+        metrics.py           # Recall@K, MRR, Hit Rate — readable Python
+        evaluator.py         # run questions through every model, aggregate
     data/
         raw/sample/          # tiny TEST documents (clearly labelled)
+        raw/hard/            # synthetic harder corpus (lexical vs semantic)
+        evaluation/          # golden_questions.json / golden_questions_hard.json
         processed/
     scripts/
         ingest_dataset.py
         test_retrieval.py
         compare_retrieval.py
+        evaluate_models.py   # Phase 3: golden-question evaluation + benchmark
+    results/                 # saved evaluation runs (gitignored)
     tests/
 ```
 
@@ -84,6 +93,12 @@ python scripts/compare_models.py
 python scripts/ingest_dataset.py          # load -> chunk -> embed -> pgvector
 python scripts/test_retrieval.py          # one query, top-5 per model
 python scripts/compare_retrieval.py       # rankings + overlap + latency
+
+# Phase 3 — evaluate retrieval against ground truth
+python scripts/evaluate_models.py         # golden questions -> Recall@K / MRR
+# harder corpus (semantic vs lexical):
+python scripts/ingest_dataset.py --reset --path data/raw/hard
+python scripts/evaluate_models.py --questions data/evaluation/golden_questions_hard.json
 ```
 
 ## Architecture
@@ -264,6 +279,57 @@ like Recall@K, MRR, and nDCG will be added in a later phase.)
 - **Query time**: question → query embedding → vector similarity search → Top-K
   chunks. Light (one embedding + one indexed search).
 
+## From similarity search to retrieval evaluation
+
+Phase 2 answered *"what does the model retrieve?"*; Phase 3 answers *"is what it
+retrieves actually correct?"*.
+
+```
+Phase 2:   Question -> embedding -> similarity search -> Top-K chunks
+
+Phase 3:   Question -> retrieval -> Top-K chunks
+                        -> compare against known relevant evidence
+                        -> compute retrieval metrics (Recall@K, MRR, ...)
+```
+
+Why the distinction matters: a model producing plausible-looking results is not
+enough. Two models can return completely different chunks and both *look*
+reasonable. Only ground truth — knowing which documents actually contain the
+answer — lets us measure retrieval quality objectively.
+
+### Ground truth
+
+`data/evaluation/golden_questions.json` maps each question to the document IDs
+(and optionally chunk IDs) that contain the answer. Ground truth is authored by
+hand against our source documents — no model decides relevance during
+evaluation.
+
+- **Document-level relevance** — "did the system retrieve evidence from the
+  correct document?" (default).
+- **Chunk-level relevance** — "did the system retrieve the exact relevant
+  passage?" (optional `relevant_chunk_ids`, for fine-grained evaluation later).
+
+### Metrics
+
+- **Recall@K** — fraction of relevant items retrieved within the top-K results
+  (`|top-k ∩ relevant| / |relevant|`).
+- **Hit Rate@K** — whether *any* relevant item appears in the top-K (binary).
+- **MRR (Mean Reciprocal Rank)** — the mean of `1 / rank_of_first_relevant`
+  across questions.
+
+These compare **rankings and retrieval effectiveness**, never raw cosine scores.
+`E5 = 0.85` vs `MiniLM = 0.62` is not a comparison — each model has its own score
+distribution. We compare Recall@K, MRR, rank position, ground-truth relevance,
+and latency.
+
+### What the benchmark does and does not tell us
+
+A benchmark on *this* tiny corpus tells us how the three models rank the
+documents *in this dataset*. It does **not** establish a universal "best" model:
+results depend on the dataset, query distribution, ground-truth labels, chunking
+strategy, and retrieval settings (top-k, similarity metric). A later phase with
+a larger real dataset is what turns this into a meaningful comparison.
+
 ## What comes from us vs. from Hugging Face
 
 **Our source code** (loader, chunker, indexer, retriever, scripts) contains the
@@ -286,5 +352,7 @@ python -m pytest -q
 
 Covers: embedding dimensions (384/768/768), symmetric vs prefixed models,
 deterministic chunking, loader normalization, schema dimensions, identical chunk
-IDs across models, top-k count, and idempotent re-ingestion. The database tests
-skip automatically when PostgreSQL/pgvector is not reachable.
+IDs across models, top-k count, idempotent re-ingestion, and the retrieval
+metrics (Recall@K, RR, MRR, Hit Rate) plus golden-dataset validation and
+evaluator serialization. The database tests skip automatically when
+PostgreSQL/pgvector is not reachable.

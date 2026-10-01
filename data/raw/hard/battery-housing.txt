@@ -1,0 +1,2 @@
+Battery Enclosures and Thermal Management
+In consumer electronics, the battery is surrounded by a protective enclosure that shields it from impact and helps manage heat. These housings are often made of aluminium or plastic and include insulation and venting to prevent overheating. The enclosure does not store energy itself; its job is mechanical protection and thermal regulation of the cell inside.

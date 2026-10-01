@@ -1,0 +1,2 @@
+Photovoltaic Solar Panels
+Solar panels convert sunlight directly into electricity using semiconductor cells. When photons strike the panel they excite electrons, creating a flow of current. Panels generate power only while the sun is shining; by themselves they do not store energy, so a separate battery or grid connection is needed to supply power after dark.

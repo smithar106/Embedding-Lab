@@ -7,6 +7,9 @@ venv/
 # Hugging Face cache (model files download here on first run)
 .hf_cache/
 
+# Evaluation run artifacts (generated)
+results/*.json
+
 # OS / editor
 .DS_Store
 .idea/

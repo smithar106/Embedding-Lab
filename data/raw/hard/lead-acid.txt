@@ -1,0 +1,2 @@
+Lead-Acid Starting Batteries
+Lead-acid batteries have been used for over a century, most commonly as the starting battery in gasoline and diesel vehicles. They store energy through a reaction between lead plates and sulfuric acid electrolyte. Although heavy and lower in energy density than lithium-ion cells, they are cheap and can deliver the large burst of current needed to start an engine.

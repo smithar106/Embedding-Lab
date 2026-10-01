@@ -1,0 +1,2 @@
+Capacitors and Electrostatic Storage
+A capacitor stores energy in an electric field rather than in a chemical reaction. It consists of two conductive plates separated by an insulator; applying a voltage causes opposite charges to accumulate on the plates. Capacitors charge and discharge almost instantly, making them useful for smoothing power delivery, but they store far less energy than a battery of the same size.

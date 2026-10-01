@@ -1,0 +1,60 @@
+[
+  {
+    "question_id": "q001",
+    "question": "What evidence suggests Mars once had liquid water?",
+    "relevant_document_ids": [
+      "mars-liquid-water",
+      "curiosity-rover",
+      "perseverance-rover"
+    ],
+    "relevant_chunk_ids": [
+      "mars-liquid-water#0",
+      "mars-liquid-water#1",
+      "curiosity-rover#0",
+      "perseverance-rover#0"
+    ],
+    "notes": "Multiple documents contain direct evidence of past water on Mars."
+  },
+  {
+    "question_id": "q002",
+    "question": "How much water is stored in the polar ice caps of Mars?",
+    "relevant_document_ids": ["mars-polar-ice"],
+    "notes": "Directly about the polar ice caps."
+  },
+  {
+    "question_id": "q003",
+    "question": "Which observatory studies distant galaxies in infrared light?",
+    "relevant_document_ids": ["james-webb"],
+    "notes": "Directly about the James Webb Space Telescope."
+  },
+  {
+    "question_id": "q004",
+    "question": "Which spacecraft visited the outer planets and later entered interstellar space?",
+    "relevant_document_ids": ["voyager"],
+    "notes": "Directly about the Voyager mission."
+  },
+  {
+    "question_id": "q005",
+    "question": "What is NASA's program to return astronauts to the Moon?",
+    "relevant_document_ids": ["artemis-moon"],
+    "notes": "Directly about the Artemis program."
+  },
+  {
+    "question_id": "q006",
+    "question": "Which rover is searching an ancient river delta in Jezero Crater for signs of past life?",
+    "relevant_document_ids": ["perseverance-rover"],
+    "notes": "Directly about the Perseverance rover."
+  },
+  {
+    "question_id": "q007",
+    "question": "Which moon of Jupiter may hide a liquid ocean beneath its icy crust?",
+    "relevant_document_ids": ["europa-moon"],
+    "notes": "Directly about Europa."
+  },
+  {
+    "question_id": "q008",
+    "question": "What did the Curiosity rover discover about water in Gale Crater?",
+    "relevant_document_ids": ["curiosity-rover"],
+    "notes": "Directly about the Curiosity rover."
+  }
+]

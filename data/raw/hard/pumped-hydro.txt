@@ -1,0 +1,2 @@
+Pumped-Storage Hydropower
+Pumped-storage hydropower is the most widely deployed form of grid-scale energy storage. It works by using surplus electricity to pump water from a lower reservoir to a higher one, then letting the water flow back down through turbines when electricity demand rises. In this way a plant stores energy as gravitational potential and releases it later, helping balance supply and demand on the electricity grid.
