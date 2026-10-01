@@ -1,0 +1,25 @@
+{
+  "documents": [
+    {
+      "document_id": "curiosity-rover",
+      "title": "Curiosity Rover and Gale Crater",
+      "source": "sample/rovers.json",
+      "text": "The Curiosity rover has been exploring Gale Crater since 2012. Gale Crater was chosen as a landing site because it preserves a long record of Martian history, including rocks that formed in water. Curiosity found rounded pebbles, layered mudstones, and minerals such as hematite that indicate a lake and stream system once existed there. These findings provide direct ground-truth evidence that liquid water was once present on the surface of Mars for potentially millions of years.",
+      "metadata": {"test": true, "topic": "mars-water"}
+    },
+    {
+      "document_id": "perseverance-rover",
+      "title": "Perseverance Rover and Jezero Crater",
+      "source": "sample/rovers.json",
+      "text": "The Perseverance rover landed in Jezero Crater, the site of an ancient river delta, to search for signs of past microbial life. The delta formed where a river once flowed into a crater lake, depositing sediment that could preserve evidence of past water and any life it might have hosted. Perseverance is collecting and caching rock samples that will later be returned to Earth for detailed analysis. The choice of Jezero Crater was driven specifically by evidence that liquid water once flowed across its surface.",
+      "metadata": {"test": true, "topic": "mars-water"}
+    },
+    {
+      "document_id": "europa-moon",
+      "title": "Europa and a Subsurface Ocean",
+      "source": "sample/rovers.json",
+      "text": "Europa, one of Jupiter's moons, is believed to harbor a global ocean of liquid water beneath its icy crust. Tidal heating from Jupiter's gravity may keep that ocean liquid. Plumes of water vapor have been observed venting through cracks in the ice, hinting at the ocean below. Europa is considered one of the most promising places in the solar system to search for life beyond Earth. Unlike Mars, where water existed mostly in the distant past, Europa may contain a vast ocean today.",
+      "metadata": {"test": true, "topic": "water-elsewhere"}
+    }
+  ]
+}

@@ -1,7 +1,11 @@
-# Embedding models are run locally via sentence-transformers (which pulls in
-# PyTorch, transformers, etc.). Nothing else is needed.
+# Embedding models (sentence-transformers pulls in PyTorch + transformers).
 sentence-transformers>=2.7
 
-# numpy is a transitive dependency of sentence-transformers, but we import it
-# directly (for cosine similarity), so we declare it explicitly.
+# Vector math for cosine similarity.
 numpy
+
+# PostgreSQL driver (v3) for the indexing/retrieval layer.
+psycopg[binary]>=3.1
+
+# pgvector adapter so psycopg can pass embeddings as `vector` parameters.
+pgvector
