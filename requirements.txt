@@ -1,0 +1,7 @@
+# Embedding models are run locally via sentence-transformers (which pulls in
+# PyTorch, transformers, etc.). Nothing else is needed.
+sentence-transformers>=2.7
+
+# numpy is a transitive dependency of sentence-transformers, but we import it
+# directly (for cosine similarity), so we declare it explicitly.
+numpy

@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Hugging Face cache (model files download here on first run)
+.hf_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
