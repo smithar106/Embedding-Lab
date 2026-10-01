@@ -111,6 +111,9 @@ python scripts/evaluate_models.py --questions data/evaluation/golden_questions_h
 # Phase 4 — retrieval-augmented generation (set DEEPSEEK_API_KEY first)
 python scripts/compare_rag.py             # one question, full RAG, 3 models
 python scripts/evaluate_rag.py            # answer metrics + results JSON
+
+# Phase 4.5 — top-K sensitivity (K=1,2,3,5) — retrieval vs generation vs cost
+python scripts/evaluate_topk.py
 ```
 
 ## Architecture
