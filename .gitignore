@@ -7,6 +7,9 @@ venv/
 # Hugging Face cache (model files download here on first run)
 .hf_cache/
 
+# Environment (secrets — never commit)
+.env
+
 # Evaluation run artifacts (generated)
 results/*.json
 

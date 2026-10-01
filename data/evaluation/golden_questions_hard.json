@@ -3,36 +3,42 @@
     "question_id": "hq001",
     "question": "How do lithium-ion batteries store energy?",
     "relevant_document_ids": ["lithium-ion"],
+    "expected_facts": ["lithium ions", "electrodes", "electrolyte"],
     "notes": "Directly about lithium-ion cells."
   },
   {
     "question_id": "hq002",
     "question": "What grid-scale technology stores energy by pumping water uphill?",
     "relevant_document_ids": ["pumped-hydro"],
+    "expected_facts": ["pump", "reservoir", "turbine"],
     "notes": "Paraphrase of 'pump water from a lower reservoir to a higher one'."
   },
   {
     "question_id": "hq003",
     "question": "Which component stores energy in an electric field instead of chemically?",
     "relevant_document_ids": ["capacitor"],
+    "expected_facts": ["capacitor", "electric field"],
     "notes": "Paraphrase; 'capacitor' keyword is not in the question."
   },
   {
     "question_id": "hq004",
     "question": "What technology turns sunlight into electricity?",
     "relevant_document_ids": ["solar-panel"],
+    "expected_facts": ["sunlight", "semiconductor", "electricity"],
     "notes": "Paraphrase of 'convert sunlight directly into electricity'."
   },
   {
     "question_id": "hq005",
     "question": "What kind of battery starts gasoline and diesel vehicle engines?",
     "relevant_document_ids": ["lead-acid"],
+    "expected_facts": ["lead", "sulfuric acid", "engine"],
     "notes": "Paraphrase; 'lead-acid' keyword is not in the question."
   },
   {
     "question_id": "hq006",
     "question": "How can the grid keep supplying electricity after the sun goes down?",
     "relevant_document_ids": ["pumped-hydro", "lithium-ion"],
+    "expected_facts": ["storage", "battery", "pumped"],
     "notes": "Semantic question: implies storage, not solar generation. solar-panel shares the 'sun' keyword but is a distractor."
   }
 ]

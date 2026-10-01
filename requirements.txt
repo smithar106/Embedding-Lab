@@ -9,3 +9,9 @@ psycopg[binary]>=3.1
 
 # pgvector adapter so psycopg can pass embeddings as `vector` parameters.
 pgvector
+
+# Generation layer (Phase 4) — DeepSeek via its OpenAI-compatible API.
+openai>=1.30
+
+# Load .env for local configuration.
+python-dotenv

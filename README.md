@@ -41,16 +41,24 @@ embedding-lab/
         dataset.py           # load + validate golden questions
         metrics.py           # Recall@K, MRR, Hit Rate — readable Python
         evaluator.py         # run questions through every model, aggregate
+        answer_metrics.py    # fact coverage, citation validity, refusal
+    generation/
+        __init__.py
+        prompts.py           # grounded prompt + citation format
+        generator.py         # shared DeepSeek generation layer
+        rag.py               # run_rag: retrieval + generation
     data/
         raw/sample/          # tiny TEST documents (clearly labelled)
         raw/hard/            # synthetic harder corpus (lexical vs semantic)
-        evaluation/          # golden_questions.json / golden_questions_hard.json
+        evaluation/          # golden questions + insufficient-evidence questions
         processed/
     scripts/
         ingest_dataset.py
         test_retrieval.py
         compare_retrieval.py
         evaluate_models.py   # Phase 3: golden-question evaluation + benchmark
+        compare_rag.py       # Phase 4: one question, full RAG, 3 models
+        evaluate_rag.py      # Phase 4: answer metrics + results JSON
     results/                 # saved evaluation runs (gitignored)
     tests/
 ```
@@ -99,6 +107,10 @@ python scripts/evaluate_models.py         # golden questions -> Recall@K / MRR
 # harder corpus (semantic vs lexical):
 python scripts/ingest_dataset.py --reset --path data/raw/hard
 python scripts/evaluate_models.py --questions data/evaluation/golden_questions_hard.json
+
+# Phase 4 — retrieval-augmented generation (set DEEPSEEK_API_KEY first)
+python scripts/compare_rag.py             # one question, full RAG, 3 models
+python scripts/evaluate_rag.py            # answer metrics + results JSON
 ```
 
 ## Architecture
@@ -330,6 +342,60 @@ results depend on the dataset, query distribution, ground-truth labels, chunking
 strategy, and retrieval settings (top-k, similarity metric). A later phase with
 a larger real dataset is what turns this into a meaningful comparison.
 
+## From retrieval evaluation to RAG evaluation
+
+Phase 3 measured *retrieval* against ground truth; Phase 4 adds a generation
+step and measures the *answer*.
+
+```
+Phase 3:   Question -> retrieval -> Top-K chunks -> compare against ground truth
+
+Phase 4:   Question -> retrieval -> Top-K chunks -> LLM -> answer -> evaluate answer
+```
+
+Retrieval quality and generation quality are **different problems**:
+
+- A retrieval failure can cause a generation failure even when the LLM behaves
+  perfectly — if the relevant chunk is never retrieved, the model has nothing to
+  ground the answer on.
+- Good retrieval does **not** guarantee a grounded answer — the LLM can still
+  ignore or misread the evidence, or invent a citation.
+
+Phase 4 isolates the retrieval variable: one shared LLM, one prompt, one
+temperature, one `top_k`, with only the embedding model (and therefore the
+retrieved evidence) changing. Any difference in the answer can then be traced
+back to a difference in the evidence.
+
+### The controlled pipeline
+
+```
+question -> embed_query(embedding_model) -> pgvector retrieval -> Top-K chunks
+         -> SAME prompt -> SAME LLM -> answer
+```
+
+`generation/` holds the shared layer (`generate_answer`, the grounded prompt,
+and `run_rag`). The generation model is configured via `DEEPSEEK_MODEL` /
+`DEEPSEEK_API_KEY` and never changes with the embedding model.
+
+### Answer metrics
+
+- **Expected-fact coverage** — how many human-authored facts appear in the answer.
+- **Citation validity** — every `[chunk_id]` citation must name a chunk actually
+  supplied to the model (hallucinated citations are flagged).
+- **Citation relevance** — whether cited chunks belong to a relevant document.
+- **Refusal** — for questions the corpus cannot answer, the model should abstain
+  rather than invent an answer.
+
+### What Phase 4 shows on this corpus
+
+On the hard corpus, all three embedding models produce essentially identical
+answers (fact coverage ≈ 0.94, citation validity 1.0) and all correctly refuse
+out-of-corpus questions — **despite** the ranking differences Phase 3 measured.
+Why: with `top_k = 5` on a small corpus, the relevant chunk stays inside the
+retrieved window for every model, so the grounded LLM finds the same evidence.
+The ranking differences only *matter* when they push the relevant evidence out
+of the top-K window, or on genuinely ambiguous queries.
+
 ## What comes from us vs. from Hugging Face
 
 **Our source code** (loader, chunker, indexer, retriever, scripts) contains the
@@ -352,7 +418,9 @@ python -m pytest -q
 
 Covers: embedding dimensions (384/768/768), symmetric vs prefixed models,
 deterministic chunking, loader normalization, schema dimensions, identical chunk
-IDs across models, top-k count, idempotent re-ingestion, and the retrieval
-metrics (Recall@K, RR, MRR, Hit Rate) plus golden-dataset validation and
-evaluator serialization. The database tests skip automatically when
-PostgreSQL/pgvector is not reachable.
+IDs across models, top-k count, idempotent re-ingestion, retrieval metrics
+(Recall@K, RR, MRR, Hit Rate), golden-dataset validation, evaluator
+serialization, answer metrics (fact coverage, citation validity, refusal),
+prompt determinism, generation failure handling, and the same-model/same-prompt/
+same-top_k guarantees. The database tests skip automatically when
+PostgreSQL/pgvector is not reachable; generation tests mock the API client.
