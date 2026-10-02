@@ -27,7 +27,6 @@ load_dotenv()
 
 from database.connection import (  # noqa: E402
     close_pool,
-    get_connection,
     init_db,
     verify_schema,
 )
@@ -35,8 +34,7 @@ from database.connection import (  # noqa: E402
 
 def main() -> None:
     print("Initializing database…")
-    with get_connection() as conn:
-        init_db(conn)  # idempotent: CREATE EXTENSION IF NOT EXISTS vector + schema
+    init_db()  # idempotent: CREATE EXTENSION IF NOT EXISTS vector + schema (direct connection)
     print("Schema created (idempotent).")
 
     status = verify_schema()

@@ -62,10 +62,24 @@ def close_pool() -> None:
         _pool = None
 
 
-def init_db(conn: psycopg.Connection) -> None:
-    """Create the schema (idempotent)."""
-    conn.execute(_SCHEMA_PATH.read_text())
-    conn.commit()
+def init_db(conn: psycopg.Connection | None = None) -> None:
+    """Create the schema (idempotent).
+
+    When ``conn`` is omitted, this opens a DIRECT connection (not the pool)
+    because the schema creates the pgvector extension, and the pool's
+    ``configure=register_vector`` callback requires the ``vector`` type to
+    already exist — a chicken-and-egg on a fresh database.
+    """
+    if conn is None:
+        conn = psycopg.connect(_url(), connect_timeout=5)
+        try:
+            conn.execute(_SCHEMA_PATH.read_text())
+            conn.commit()
+        finally:
+            conn.close()
+    else:
+        conn.execute(_SCHEMA_PATH.read_text())
+        conn.commit()
 
 
 def reset_db(conn: psycopg.Connection) -> None:

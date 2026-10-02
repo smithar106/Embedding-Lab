@@ -37,8 +37,9 @@ def index_dataset(
     models = models or list(MODELS)
     started = time.perf_counter()
 
+    init_db()  # direct connection: ensures pgvector extension + schema exist first
+
     with get_connection() as conn:
-        init_db(conn)
         if reset:
             reset_db(conn)
 
