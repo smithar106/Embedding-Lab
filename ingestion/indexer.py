@@ -37,8 +37,7 @@ def index_dataset(
     models = models or list(MODELS)
     started = time.perf_counter()
 
-    conn = get_connection()
-    try:
+    with get_connection() as conn:
         init_db(conn)
         if reset:
             reset_db(conn)
@@ -153,8 +152,6 @@ def index_dataset(
             "embeddings_skipped": unchanged_count * len(models),
             "runtime_seconds": round(elapsed, 2),
         }
-    finally:
-        conn.close()
 
 
 def _json(metadata: dict):

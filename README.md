@@ -475,6 +475,46 @@ A small golden dataset measures a new layer — *agent quality*:
 - **Expected-fact coverage** — did the answer contain the ground-truth facts?
 - **Insufficient-evidence behaviour** — did out-of-corpus questions abstain?
 
+## Production architecture (Phase 6)
+
+The whole system is exposed as ONE FastAPI service over ONE PostgreSQL/pgvector
+database. The API is a thin transport layer — routes delegate to the existing
+agent/tool code.
+
+```
+                 INTERNET
+                     |
+                 FastAPI                     (api/app.py)
+                     |
+                   Agent                     (agent/agent.py)
+                /         \
+         direct answer    tool call
+                            |
+                     retrieval_search         (tools/retrieval_tool.py)
+                            |
+                           BGE                 (loaded once at startup)
+                            |
+                 PostgreSQL + pgvector
+                            |
+                        Top-2 chunks
+                            |
+                          Agent
+                            |
+                        DeepSeek
+                            |
+                    grounded answer
+```
+
+Deployment lifecycle:
+
+- **Once** — `python -m scripts.init_database` (enable pgvector, create schema).
+- **Per data update** — `python -m scripts.ingest_dataset` (chunk → embed → index).
+- **App start** — load BGE into memory, open the DB pool, become ready.
+- **Per request** — question → agent decision → optional retrieval → generation.
+
+Endpoints: `GET /health`, `POST /ask`, `POST /retrieve`, `GET /config`.
+See `docs/DEPLOYMENT.md` for the exact Railway steps.
+
 ## What comes from us vs. from Hugging Face
 
 **Our source code** (loader, chunker, indexer, retriever, scripts) contains the

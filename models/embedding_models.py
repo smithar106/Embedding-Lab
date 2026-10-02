@@ -132,6 +132,11 @@ def _model(model_name: str) -> "SentenceTransformer":
     return _loaded[model_name]
 
 
+def is_model_loaded(model_name: str) -> bool:
+    """Whether ``model_name`` has been loaded into process memory (cached)."""
+    return model_name in _loaded
+
+
 # ---------------------------------------------------------------------------
 # 3. Encoding text (the model-agnostic interface)
 # ---------------------------------------------------------------------------

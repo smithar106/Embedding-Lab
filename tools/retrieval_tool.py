@@ -11,6 +11,8 @@ evidence — and synthesizing an answer — is the agent's job, not the tool's.
 """
 from __future__ import annotations
 
+import os
+
 from retrieval.retriever import retrieve
 
 # Experimentally selected defaults (see the README / Phase 4.5):
@@ -18,7 +20,7 @@ from retrieval.retriever import retrieve
 #     coverage by K=2.
 #   - K=2 reached the observed quality plateau; K>2 added context without
 #     measurable answer-quality improvement.
-# This is a choice from THIS experiment — not a claim of universal optimality.
+# These are a choice from THIS experiment — not a claim of universal optimality.
 DEFAULT_EMBEDDING_MODEL = "bge"
 DEFAULT_TOP_K = 2
 
@@ -31,17 +33,26 @@ TOOL_DESCRIPTION = (
 
 def retrieval_search(
     query: str,
-    top_k: int = DEFAULT_TOP_K,
-    embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+    top_k: int | None = None,
+    embedding_model: str | None = None,
 ) -> dict:
     """Return ranked evidence chunks for ``query`` from the knowledge base.
 
     This calls the EXISTING retrieval system (``retrieve``) — no retrieval logic
     is duplicated here. Returns structured data, with raw implementation details
     (embeddings, SQL, vector search) kept internal.
+
+    ``top_k`` and ``embedding_model`` default to the environment configuration
+    (``TOP_K`` / ``EMBEDDING_MODEL``), so a production deployment can pin them
+    without code changes.
     """
     if not isinstance(query, str) or not query.strip():
         raise ValueError("query must be a non-empty string")
+
+    if top_k is None:
+        top_k = int(os.environ.get("TOP_K", DEFAULT_TOP_K))
+    if embedding_model is None:
+        embedding_model = os.environ.get("EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
     if not isinstance(top_k, int) or top_k < 1:
         raise ValueError("top_k must be a positive integer")
 

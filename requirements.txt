@@ -4,14 +4,20 @@ sentence-transformers>=2.7
 # Vector math for cosine similarity.
 numpy
 
-# PostgreSQL driver (v3) for the indexing/retrieval layer.
+# PostgreSQL driver (v3) + connection pooling.
 psycopg[binary]>=3.1
+psycopg-pool>=3.2
 
 # pgvector adapter so psycopg can pass embeddings as `vector` parameters.
 pgvector
 
-# Generation layer (Phase 4) — DeepSeek via its OpenAI-compatible API.
+# Generation layer — DeepSeek via its OpenAI-compatible API.
 openai>=1.30
 
 # Load .env for local configuration.
 python-dotenv
+
+# Production API (Phase 6).
+fastapi>=0.110
+uvicorn[standard]>=0.29
+httpx>=0.27

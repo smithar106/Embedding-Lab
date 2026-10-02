@@ -35,6 +35,9 @@ def main() -> None:
         reset=args.reset,
     )
 
+    from database.connection import close_pool
+    close_pool()
+
     print("\nSummary:")
     for key, value in summary.items():
         print(f"  {key}: {value}")

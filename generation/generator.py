@@ -16,7 +16,8 @@ from generation.prompts import build_prompt, parse_citations
 
 def get_generation_model() -> str:
     """The single generation model used for all experiments."""
-    return os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+    # GENERATION_MODEL is the production name; DEEPSEEK_MODEL kept as an alias.
+    return os.environ.get("GENERATION_MODEL") or os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
 
 def get_generation_temperature() -> float:

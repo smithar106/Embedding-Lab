@@ -19,10 +19,9 @@ def db_available():
     try:
         from database.connection import get_connection, init_db
 
-        conn = get_connection()
-        init_db(conn)  # ensure the schema exists for the tests below
-        conn.execute("SELECT 1")
-        conn.close()
+        with get_connection() as conn:
+            init_db(conn)  # ensure the schema exists for the tests below
+            conn.execute("SELECT 1")
         return True
     except Exception:
         pytest.skip("PostgreSQL/pgvector not available")
@@ -35,8 +34,7 @@ def _write_doc(tmp_path: Path) -> Path:
 
 
 def test_vector_dimensions_in_schema_match_models(db_available):
-    conn = get_connection()
-    try:
+    with get_connection() as conn:
         for model_name, table in MODEL_TABLES.items():
             row = conn.execute(
                 """
@@ -50,8 +48,6 @@ def test_vector_dimensions_in_schema_match_models(db_available):
             ).fetchone()
             expected = {"minilm": 384, "bge": 768, "e5": 768}[model_name]
             assert row[0] == expected, f"{table} is {row[0]}-dim, expected {expected}"
-    finally:
-        conn.close()
 
 
 def test_indexing_and_retrieval(tmp_path, db_available):
@@ -61,8 +57,7 @@ def test_indexing_and_retrieval(tmp_path, db_available):
     assert summary["chunks_created"] >= 1
     assert summary["embeddings_generated"] == summary["chunks_created"] * 3  # 3 models
 
-    conn = get_connection()
-    try:
+    with get_connection() as conn:
         # Every model indexes the exact same chunk ids.
         ids_per_model = {}
         for model, table in MODEL_TABLES.items():
@@ -70,8 +65,6 @@ def test_indexing_and_retrieval(tmp_path, db_available):
             ids_per_model[model] = {r[0] for r in rows}
         assert ids_per_model["minilm"] == ids_per_model["bge"] == ids_per_model["e5"]
         assert len(ids_per_model["minilm"]) == summary["chunks_created"]
-    finally:
-        conn.close()
 
 
 def test_retrieval_top_k_count(tmp_path, db_available):

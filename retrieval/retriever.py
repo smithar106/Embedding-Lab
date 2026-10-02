@@ -36,7 +36,7 @@ def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
     query_vector = embed_query(query, model_name)
 
     conn = get_connection()
-    try:
+    with conn as conn:
         # 2. Cosine-similarity search: ``<=>`` is pgvector's cosine *distance*,
         #    so ``1 - distance`` = similarity. Order ascending distance = desc sim.
         sql = f"""
@@ -51,8 +51,6 @@ def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
         with conn.cursor() as cur:
             cur.execute(sql, (query_vector, query_vector, top_k))
             rows = cur.fetchall()
-    finally:
-        conn.close()
 
     results = []
     for rank, row in enumerate(rows, start=1):
@@ -72,8 +70,7 @@ def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
 def retrieve_with_timing(query: str, model_name: str, top_k: int = 5) -> tuple[list[dict], dict]:
     """Like ``retrieve`` but also reports embed/search/total latency (warm)."""
     table = MODEL_TABLES[model_name]
-    conn = get_connection()
-    try:
+    with get_connection() as conn:
         # Embed timing (model already warm — do one throwaway call first).
         t0 = time.perf_counter()
         query_vector = embed_query(query, model_name)
@@ -93,8 +90,6 @@ def retrieve_with_timing(query: str, model_name: str, top_k: int = 5) -> tuple[l
             cur.execute(sql, (query_vector, query_vector, top_k))
             rows = cur.fetchall()
         search_ms = (time.perf_counter() - t1) * 1000.0
-    finally:
-        conn.close()
 
     total_ms = embed_ms + search_ms
     results = []

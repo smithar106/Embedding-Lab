@@ -1,0 +1,27 @@
+# Version control
+.git
+.gitignore
+
+# Secrets — never copy into the image
+.env
+
+# Local caches / artifacts
+__pycache__
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+results/
+.hf_cache/
+data/processed/
+*.db
+
+# Not needed at runtime
+tests/
+docs/
+README.md
+railway.toml
+
+# OS
+.DS_Store

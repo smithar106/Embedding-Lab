@@ -27,10 +27,16 @@ from tools.retrieval_tool import TOOL_SCHEMA, retrieval_search
 def run_agent(
     user_query: str,
     *,
-    default_top_k: int = 2,
-    default_embedding_model: str = "bge",
+    default_top_k: int | None = None,
+    default_embedding_model: str | None = None,
 ) -> dict:
     """Run the agent for one user query and return a full structured trace."""
+    from config import get_settings
+
+    settings = get_settings()
+    default_top_k = default_top_k if default_top_k is not None else settings.top_k
+    default_embedding_model = default_embedding_model or settings.embedding_model
+
     client = get_client()
     model = get_generation_model()
 
@@ -46,6 +52,7 @@ def run_agent(
         "citation_validity": None,
         "refused": False,
         "latency": {},
+        "usage": None,
         "error": None,
     }
 
@@ -53,6 +60,26 @@ def run_agent(
         {"role": "system", "content": AGENT_SYSTEM},
         {"role": "user", "content": user_query},
     ]
+
+    def _usage(resp) -> dict | None:
+        u = getattr(resp, "usage", None)
+        if not u:
+            return None
+        return {
+            "input_tokens": getattr(u, "prompt_tokens", 0) or 0,
+            "output_tokens": getattr(u, "completion_tokens", 0) or 0,
+            "total_tokens": getattr(u, "total_tokens", 0) or 0,
+        }
+
+    def _add_usage(resp) -> None:
+        u = _usage(resp)
+        if not u:
+            return
+        acc = trace["usage"] or {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+        acc["input_tokens"] += u["input_tokens"]
+        acc["output_tokens"] += u["output_tokens"]
+        acc["total_tokens"] += u["total_tokens"]
+        trace["usage"] = acc
 
     try:
         # ---- 1. LLM decision -------------------------------------------------
@@ -62,6 +89,7 @@ def run_agent(
         )
         decision_ms = (time.perf_counter() - t0) * 1000.0
         trace["latency"]["agent_decision_ms"] = round(decision_ms, 2)
+        _add_usage(decision)
 
         msg = decision.choices[0].message
         tool_calls = list(msg.tool_calls or [])
@@ -110,6 +138,7 @@ def run_agent(
             gen_ms = (time.perf_counter() - t2) * 1000.0
             trace["latency"]["final_generation_ms"] = round(gen_ms, 2)
             final_answer = final.choices[0].message.content or ""
+            _add_usage(final)
         else:
             # No tool: the decision message IS the final answer.
             final_answer = msg.content or ""
