@@ -13,7 +13,7 @@ def test_load_txt():
     assert len(docs) == 1
     assert docs[0]["title"] == "My Title"
     assert "body text" in docs[0]["text"]
-    assert docs[0]["source"] == "doc.txt"
+    assert docs[0]["source_organization"] == "doc.txt"
 
 
 def test_load_json_list():
@@ -26,7 +26,7 @@ def test_load_json_list():
         ]))
         docs = load_documents(f)
     assert [x["document_id"] for x in docs] == ["a", "b"]
-    assert docs[1]["source"] == "docs.json"  # default source = filename
+    assert docs[1]["source_organization"] == "docs.json"  # default source = filename
 
 
 def test_load_json_wrapped():

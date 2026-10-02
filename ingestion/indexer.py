@@ -13,7 +13,9 @@ let a real dataset refresh in place without re-embedding everything.
 """
 from __future__ import annotations
 
+import hashlib
 import time
+from datetime import date
 
 from psycopg.types.json import Jsonb
 
@@ -60,16 +62,30 @@ def index_dataset(
             for doc in documents:
                 cur.execute(
                     """
-                    INSERT INTO documents (document_id, title, source, original_text, metadata, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, now())
+                    INSERT INTO documents (document_id, title, summary, collection, topics,
+                                           source_organization, source_url, publication_date,
+                                           license, content_hash, text, metadata, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
                     ON CONFLICT (document_id) DO UPDATE SET
                         title = EXCLUDED.title,
-                        source = EXCLUDED.source,
-                        original_text = EXCLUDED.original_text,
+                        summary = EXCLUDED.summary,
+                        collection = EXCLUDED.collection,
+                        topics = EXCLUDED.topics,
+                        source_organization = EXCLUDED.source_organization,
+                        source_url = EXCLUDED.source_url,
+                        publication_date = EXCLUDED.publication_date,
+                        license = EXCLUDED.license,
+                        content_hash = EXCLUDED.content_hash,
+                        text = EXCLUDED.text,
                         metadata = EXCLUDED.metadata,
                         updated_at = now()
                     """,
-                    (doc["document_id"], doc["title"], doc["source"], doc["text"], _json(doc["metadata"])),
+                    (
+                        doc["document_id"], doc["title"], doc["summary"], doc["collection"],
+                        doc["topics"], doc["source_organization"], doc["source_url"],
+                        _pub_date(doc["publication_date"]), doc["license"],
+                        _doc_hash(doc["text"]), doc["text"], _json(doc["metadata"]),
+                    ),
                 )
         conn.commit()
 
@@ -93,17 +109,25 @@ def index_dataset(
             for c in all_chunks:
                 cur.execute(
                     """
-                    INSERT INTO chunks (chunk_id, document_id, chunk_index, chunk_text, title, source, metadata, content_hash)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO chunks (chunk_id, document_id, chunk_index, chunk_text, title,
+                                        collection, topics, source_organization, source_url,
+                                        metadata, content_hash)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (chunk_id) DO UPDATE SET
                         chunk_text = EXCLUDED.chunk_text,
                         content_hash = EXCLUDED.content_hash,
                         title = EXCLUDED.title,
-                        source = EXCLUDED.source,
+                        collection = EXCLUDED.collection,
+                        topics = EXCLUDED.topics,
+                        source_organization = EXCLUDED.source_organization,
+                        source_url = EXCLUDED.source_url,
                         metadata = EXCLUDED.metadata
                     """,
-                    (c["chunk_id"], c["document_id"], c["chunk_index"], c["chunk_text"],
-                     c["title"], c["source"], _json(c["metadata"]), c["content_hash"]),
+                    (
+                        c["chunk_id"], c["document_id"], c["chunk_index"], c["chunk_text"],
+                        c["title"], c["collection"], c["topics"], c["source_organization"],
+                        c["source_url"], _json(c["metadata"]), c["content_hash"],
+                    ),
                 )
 
         # Remove chunks that no longer exist after re-chunking (e.g. a document
@@ -158,3 +182,17 @@ def index_dataset(
 def _json(metadata: dict):
     """Wrap a dict for psycopg3 so it adapts to a PostgreSQL JSONB column."""
     return Jsonb(metadata)
+
+
+def _doc_hash(text: str) -> str:
+    """sha256 of a document's full text, used for incremental upsert."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _pub_date(value) -> date | None:
+    """Coerce an ISO date string (or None) to a ``datetime.date``."""
+    if not value:
+        return None
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value)[:10])

@@ -23,7 +23,8 @@ def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
     """Return the Top-K chunks for ``query`` using ``model_name``.
 
     Each result is a dict: rank, chunk_id, document_id, chunk_index, title,
-    chunk_text, similarity_score, source.
+    chunk_text, collection, topics, source_organization, source_url,
+    similarity_score.
 
     ``similarity_score`` is cosine similarity (1 - pgvector cosine distance).
     """
@@ -41,7 +42,7 @@ def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
         #    so ``1 - distance`` = similarity. Order ascending distance = desc sim.
         sql = f"""
             SELECT c.chunk_id, c.document_id, c.chunk_index, c.chunk_text,
-                   c.title, c.source,
+                   c.title, c.collection, c.topics, c.source_organization, c.source_url,
                    1 - (e.embedding <=> %s) AS similarity
             FROM {table} e
             JOIN chunks c ON c.chunk_id = e.chunk_id
@@ -61,8 +62,11 @@ def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
             "chunk_index": row[2],
             "chunk_text": row[3],
             "title": row[4],
-            "source": row[5],
-            "similarity_score": round(float(row[6]), 4),
+            "collection": row[5],
+            "topics": row[6],
+            "source_organization": row[7],
+            "source_url": row[8],
+            "similarity_score": round(float(row[9]), 4),
         })
     return results
 
@@ -78,7 +82,7 @@ def retrieve_with_timing(query: str, model_name: str, top_k: int = 5) -> tuple[l
 
         sql = f"""
             SELECT c.chunk_id, c.document_id, c.chunk_index, c.chunk_text,
-                   c.title, c.source,
+                   c.title, c.collection, c.topics, c.source_organization, c.source_url,
                    1 - (e.embedding <=> %s) AS similarity
             FROM {table} e
             JOIN chunks c ON c.chunk_id = e.chunk_id
@@ -101,8 +105,11 @@ def retrieve_with_timing(query: str, model_name: str, top_k: int = 5) -> tuple[l
             "chunk_index": row[2],
             "chunk_text": row[3],
             "title": row[4],
-            "source": row[5],
-            "similarity_score": round(float(row[6]), 4),
+            "collection": row[5],
+            "topics": row[6],
+            "source_organization": row[7],
+            "source_url": row[8],
+            "similarity_score": round(float(row[9]), 4),
         })
     return results, {
         "embed_query_ms": round(embed_ms, 2),

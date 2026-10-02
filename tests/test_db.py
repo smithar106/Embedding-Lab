@@ -73,7 +73,7 @@ def test_retrieval_top_k_count(tmp_path, db_available):
     results = retrieve("water on Mars", "minilm", top_k=3)
     assert 0 < len(results) <= 3
     for r in results:
-        assert set(r.keys()) >= {"rank", "chunk_id", "document_id", "title", "chunk_text", "similarity_score", "source"}
+        assert set(r.keys()) >= {"rank", "chunk_id", "document_id", "title", "chunk_text", "similarity_score", "source_organization"}
 
 
 def test_reingestion_is_idempotent(tmp_path, db_available):

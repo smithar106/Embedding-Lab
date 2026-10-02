@@ -93,7 +93,9 @@ def chunk_document(
           "document_id": ...,
           "chunk_index": ...,
           "chunk_text": ...,
-          "title": ..., "source": ..., "metadata": ...,
+          "title": ..., "collection": ..., "topics": ...,
+          "source_organization": ..., "source_url": ...,
+          "metadata": ...,
           "content_hash": ...,   # sha256 of chunk_text (incremental upsert)
         }
     """
@@ -112,7 +114,10 @@ def chunk_document(
             "chunk_index": i,
             "chunk_text": chunk_text,
             "title": document["title"],
-            "source": document["source"],
+            "collection": document["collection"],
+            "topics": document["topics"],
+            "source_organization": document["source_organization"],
+            "source_url": document["source_url"],
             "metadata": document["metadata"],
             "content_hash": hashlib.sha256(chunk_text.encode("utf-8")).hexdigest(),
         })

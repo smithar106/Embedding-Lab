@@ -3,7 +3,11 @@ from ingestion.chunker import chunk_document
 
 
 def _doc(text, doc_id="d1"):
-    return {"document_id": doc_id, "title": "t", "text": text, "source": "test", "metadata": {}}
+    return {
+        "document_id": doc_id, "title": "t", "text": text, "summary": "",
+        "collection": "uncategorized", "topics": [],
+        "source_organization": "test", "source_url": None, "metadata": {},
+    }
 
 
 def test_chunking_is_deterministic():
@@ -17,7 +21,7 @@ def test_chunking_is_deterministic():
 def test_chunk_fields_present():
     chunks = chunk_document(_doc("word " * 2000))
     assert len(chunks) > 1
-    required = {"chunk_id", "document_id", "chunk_index", "chunk_text", "title", "source", "metadata", "content_hash"}
+    required = {"chunk_id", "document_id", "chunk_index", "chunk_text", "title", "collection", "topics", "source_organization", "source_url", "metadata", "content_hash"}
     for c in chunks:
         assert required <= set(c.keys())
 

@@ -3,20 +3,27 @@
 Every source of documents is normalised to ONE shape::
 
     {
-        "document_id": "...",   # stable unique id (used as the primary key)
+        "document_id": "...",          # stable unique id (primary key)
         "title": "...",
-        "text": "...",          # the full original text
-        "source": "...",        # where it came from (e.g. a filename)
-        "metadata": {...},      # any extra fields, free-form
+        "text": "...",                 # the full original text
+        "summary": "...",              # one-paragraph abstract (may be empty)
+        "collection": "climate",       # one of the library's collections
+        "topics": ["emissions", ...],  # free-form tags
+        "source_organization": "...",  # e.g. "International Energy Agency"
+        "source_url": "https://...",   # canonical URL of the source
+        "publication_date": "2025-11-12",  # ISO date or None
+        "license": "CC BY 4.0",        # reuse license (required for the library)
+        "metadata": {...},             # any extra fields, free-form
     }
 
-This module currently understands two formats:
+This module understands three formats:
 
     * ``.txt``   — a plain-text file; the first non-empty line is the title and
                    the rest is the body.
     * ``.json``  — either a single document object, a list of document objects,
                    or ``{"documents": [...]}``.
-    * ``.jsonl`` — one JSON document object per line.
+    * ``.jsonl`` — one JSON document object per line (the source-catalog/corpus
+                   format).
 
 To add a new format later, add a loader function and register it in the
 ``_LOADERS`` dict below keyed by file extension — the rest of the pipeline does
@@ -29,6 +36,15 @@ from pathlib import Path
 
 # extension -> loader function that returns a list of normalized document dicts
 _LOADERS = {}
+
+COLLECTIONS = (
+    "climate",
+    "energy",
+    "food-agriculture",
+    "water",
+    "cities",
+    "global-development",
+)
 
 
 def _register(ext: str):
@@ -46,7 +62,15 @@ def _normalize(raw: dict, *, default_source: str, fallback_id: int) -> dict:
 
     document_id = raw.get("document_id") or raw.get("id") or f"{default_source}-{fallback_id}"
     title = raw.get("title") or raw.get("name") or document_id
-    source = raw.get("source") or default_source
+    collection = str(raw.get("collection") or "uncategorized")
+    topics = raw.get("topics") or []
+    if isinstance(topics, str):
+        topics = [t.strip() for t in topics.split(",") if t.strip()]
+    source_organization = str(raw.get("source_organization") or raw.get("source") or default_source)
+    source_url = raw.get("source_url")
+    publication_date = raw.get("publication_date")
+    license_ = str(raw.get("license") or "unknown")
+    summary = str(raw.get("summary") or "")
     metadata = raw.get("metadata") or {}
     if not isinstance(metadata, dict):
         metadata = {"value": metadata}
@@ -55,7 +79,13 @@ def _normalize(raw: dict, *, default_source: str, fallback_id: int) -> dict:
         "document_id": str(document_id),
         "title": str(title),
         "text": text.strip(),
-        "source": str(source),
+        "summary": summary,
+        "collection": collection,
+        "topics": [str(t) for t in topics],
+        "source_organization": source_organization,
+        "source_url": source_url,
+        "publication_date": publication_date,
+        "license": license_,
         "metadata": metadata,
     }
 
@@ -70,7 +100,13 @@ def _load_txt(path: Path) -> list[dict]:
         "document_id": path.stem,
         "title": title,
         "text": body or text,
-        "source": path.name,
+        "summary": "",
+        "collection": "uncategorized",
+        "topics": [],
+        "source_organization": path.name,
+        "source_url": None,
+        "publication_date": None,
+        "license": "unknown",
         "metadata": {"format": "txt"},
     }]
 
