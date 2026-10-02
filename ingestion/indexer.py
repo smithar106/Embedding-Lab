@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import time
-from datetime import date
+from datetime import date, datetime, timezone
 
 from psycopg.types.json import Jsonb
 
@@ -64,8 +64,8 @@ def index_dataset(
                     """
                     INSERT INTO documents (document_id, title, summary, collection, topics,
                                            source_organization, source_url, publication_date,
-                                           license, content_hash, text, metadata, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+                                           retrieved_at, license, content_hash, text, metadata, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
                     ON CONFLICT (document_id) DO UPDATE SET
                         title = EXCLUDED.title,
                         summary = EXCLUDED.summary,
@@ -74,6 +74,7 @@ def index_dataset(
                         source_organization = EXCLUDED.source_organization,
                         source_url = EXCLUDED.source_url,
                         publication_date = EXCLUDED.publication_date,
+                        retrieved_at = EXCLUDED.retrieved_at,
                         license = EXCLUDED.license,
                         content_hash = EXCLUDED.content_hash,
                         text = EXCLUDED.text,
@@ -83,8 +84,8 @@ def index_dataset(
                     (
                         doc["document_id"], doc["title"], doc["summary"], doc["collection"],
                         doc["topics"], doc["source_organization"], doc["source_url"],
-                        _pub_date(doc["publication_date"]), doc["license"],
-                        _doc_hash(doc["text"]), doc["text"], _json(doc["metadata"]),
+                        _pub_date(doc["publication_date"]), _timestamptz(doc.get("retrieved_at")),
+                        doc["license"], _doc_hash(doc["text"]), doc["text"], _json(doc["metadata"]),
                     ),
                 )
         conn.commit()
@@ -196,3 +197,12 @@ def _pub_date(value) -> date | None:
     if isinstance(value, date):
         return value
     return date.fromisoformat(str(value)[:10])
+
+
+def _timestamptz(value) -> datetime:
+    """Coerce an ISO timestamp to a tz-aware ``datetime`` (defaults to now)."""
+    if not value:
+        return datetime.now(timezone.utc)
+    if isinstance(value, datetime):
+        return value
+    return datetime.fromisoformat(str(value).replace("Z", "+00:00"))

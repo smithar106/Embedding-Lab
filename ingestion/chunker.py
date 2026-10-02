@@ -51,7 +51,10 @@ def _recursive_split(text: str, separators: list[str], chunk_size: int) -> list[
         for piece in pieces:
             if piece.strip() == "":
                 continue
-            result.extend(_recursive_split(piece, separators[i:], chunk_size))
+            # Advance PAST the separator we just used (separators[i+1:]), so a
+            # piece can't re-split on its own trailing separator and recurse
+            # forever on an over-long sentence.
+            result.extend(_recursive_split(piece, separators[i + 1 :], chunk_size))
         return result
 
     # No separator matched (shouldn't happen) — hard-cut.

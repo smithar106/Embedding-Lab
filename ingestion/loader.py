@@ -12,6 +12,7 @@ Every source of documents is normalised to ONE shape::
         "source_organization": "...",  # e.g. "International Energy Agency"
         "source_url": "https://...",   # canonical URL of the source
         "publication_date": "2025-11-12",  # ISO date or None
+        "retrieved_at": "2026-10-01T...",  # ISO timestamp or None (fetch time)
         "license": "CC BY 4.0",        # reuse license (required for the library)
         "metadata": {...},             # any extra fields, free-form
     }
@@ -69,6 +70,7 @@ def _normalize(raw: dict, *, default_source: str, fallback_id: int) -> dict:
     source_organization = str(raw.get("source_organization") or raw.get("source") or default_source)
     source_url = raw.get("source_url")
     publication_date = raw.get("publication_date")
+    retrieved_at = raw.get("retrieved_at")
     license_ = str(raw.get("license") or "unknown")
     summary = str(raw.get("summary") or "")
     metadata = raw.get("metadata") or {}
@@ -85,6 +87,7 @@ def _normalize(raw: dict, *, default_source: str, fallback_id: int) -> dict:
         "source_organization": source_organization,
         "source_url": source_url,
         "publication_date": publication_date,
+        "retrieved_at": retrieved_at,
         "license": license_,
         "metadata": metadata,
     }
@@ -106,6 +109,7 @@ def _load_txt(path: Path) -> list[dict]:
         "source_organization": path.name,
         "source_url": None,
         "publication_date": None,
+        "retrieved_at": None,
         "license": "unknown",
         "metadata": {"format": "txt"},
     }]
