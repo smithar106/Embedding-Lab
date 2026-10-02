@@ -47,12 +47,58 @@ def _load_catalog(path: Path) -> list[dict]:
     return docs
 
 
-def _fetch_text(url: str) -> str | None:
+# Our World in Data pages embed their navigation/footer as part of the rendered
+# article: "Explore Data on …", "Key Charts on …", "See all charts", "Featured
+# data", "More Key Articles", "Cite this work", "Reuse this work", and the
+# endnotes. These are NOT article body — they are boilerplate that pollutes
+# chunks. We cut at the first footer marker and strip the header nav lines.
+_OWID_FOOTER_MARKERS = (
+    "\nMore Key Articles",
+    "\nOverview Articles on ",
+    "\nRelated work on ",
+    "\nKey Charts on ",
+    "\nSee all charts",
+    "\nFeatured data on ",
+    "\nFeatured Data on ",
+    "\nData insights on ",
+    "\nCite this work",
+    "\nReuse this work",
+    "\nEndnotes",
+)
+_OWID_STRIP_PREFIX = "Explore Data on "
+_OWID_STRIP_EXACT = ("Research & Writing",)
+_OWID_STRIP_CONTAINS = ("all our data, visualizations, and writing relating to",)
+
+
+def _clean_owid(text: str) -> str:
+    """Strip Our World in Data nav/footer boilerplate from extracted text."""
+    cut = len(text)
+    for marker in _OWID_FOOTER_MARKERS:
+        i = text.find(marker)
+        if i != -1 and i < cut:
+            cut = i
+    if cut < len(text):
+        text = text[:cut]
+
+    lines = []
+    for ln in text.split("\n"):
+        s = ln.strip()
+        if s.startswith(_OWID_STRIP_PREFIX) or s in _OWID_STRIP_EXACT:
+            continue
+        if any(phrase in s for phrase in _OWID_STRIP_CONTAINS):
+            continue
+        lines.append(ln)
+    return "\n".join(lines).strip()
+
+
+def _fetch_text(url: str, source_organization: str | None = None) -> str | None:
     resp = requests.get(url, headers=HEADERS, timeout=30)
     resp.raise_for_status()
     text = trafilatura.extract(resp.text, include_comments=False, include_tables=False)
     if not text or not text.strip():
         return None
+    if source_organization == "Our World in Data":
+        text = _clean_owid(text)
     return text.strip()
 
 
@@ -83,7 +129,7 @@ def main() -> None:
                 failed += 1
                 continue
             try:
-                text = _fetch_text(url)
+                text = _fetch_text(url, doc.get("source_organization"))
                 if text is None:
                     print(f"[empty] {doc['document_id']}: {url}")
                     failed += 1
