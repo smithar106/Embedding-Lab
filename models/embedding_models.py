@@ -97,6 +97,9 @@ MODELS: dict[str, ModelInfo] = {
     ),
 }
 
+# Short display names for the model keys (used by the UI and the compare API).
+MODEL_NAMES = {"minilm": "MiniLM", "bge": "BGE", "e5": "E5"}
+
 
 # ---------------------------------------------------------------------------
 # 2. Loading a model (and where the files actually live on disk)

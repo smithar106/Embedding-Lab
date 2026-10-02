@@ -8,7 +8,7 @@
 <style>
   :root{
     --paper:#f6f1e6; --paper-2:#efe8d7; --card:#fcf9f2;
-    --ink:#2b2320; --ink-soft:#3d342e; --muted:#827768;
+    --ink:#000000; --ink-soft:#000000; --muted:#000000;
     --line:#e2d8c4; --line-strong:#cfc2a8;
     --accent:#7a2e2e; --accent-soft:#f3e9e3;   /* oxblood leather */
     --green:#2f5233; --green-soft:#e7ede3;
@@ -57,7 +57,7 @@
     box-shadow:0 1px 2px rgba(42,30,26,.06), 0 10px 26px -18px rgba(42,30,26,.25);
     padding:24px 26px; margin-top:26px}
   section>h2{font-family:var(--serif); font-size:13px; text-transform:uppercase; letter-spacing:.16em;
-    color:var(--accent); margin:0 0 18px; display:flex; align-items:center; gap:10px}
+    color:#000000; margin:0 0 18px; display:flex; align-items:center; gap:10px}
   section>h2::after{content:""; flex:1; height:1px; background:var(--line)}
 
   /* ── The Collections ──────────────────────────────────────────────────── */
@@ -80,7 +80,7 @@
   .flow .node{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase;
     color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line-strong);
     border-radius:4px; padding:6px 16px}
-  .flow .node.em{color:var(--accent); font-weight:700; border-color:var(--accent); background:var(--accent-soft)}
+  .flow .node.em{color:#000000; font-weight:700; border-color:var(--accent); background:var(--accent-soft)}
   .flow .pipe{color:var(--line-strong); font-size:14px}
   .flow .branches{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
   .models{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
@@ -94,7 +94,7 @@
   .volume .row{display:flex; gap:8px; flex-wrap:wrap}
   .badge{font-family:var(--mono); font-size:10.5px; border:1px solid var(--line-strong);
     border-radius:3px; padding:2px 7px; color:var(--ink-soft); background:#fff}
-  .badge.dim{background:var(--accent-soft); border-color:#dcc2b6; color:var(--accent); font-weight:700}
+  .badge.dim{background:var(--accent-soft); border-color:#dcc2b6; color:#000000; font-weight:700}
   .volume .use{font-size:12px; color:var(--muted); margin-top:8px; font-family:var(--serif); font-style:italic}
 
   /* ── Inputs / buttons ─────────────────────────────────────────────────── */
@@ -115,7 +115,7 @@
   /* ── Results ──────────────────────────────────────────────────────────── */
   .status{display:none; color:var(--muted); font-family:var(--mono); font-size:13px; margin-top:14px}
   .status.on{display:block}
-  .err{display:none; background:#f7e8e6; border:1px solid #e3b7b0; color:var(--accent);
+  .err{display:none; background:#f7e8e6; border:1px solid #e3b7b0; color:#000000;
     border-radius:4px; padding:12px 15px; margin-top:14px; font-size:14px}
   .err.on{display:block}
 
@@ -125,7 +125,17 @@
   .book .t{font-family:var(--serif); font-size:16px; font-weight:700}
   .book .meta{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:4px}
   .book .ex{color:var(--ink-soft); font-size:14px; margin-top:8px}
-  .book .cn{font-family:var(--mono); font-size:11px; color:var(--accent); margin-top:8px}
+  .book .cn{font-family:var(--mono); font-size:11px; color:#000000; margin-top:8px}
+
+  .compare{display:grid; gap:14px; margin-top:16px}
+  .mgroup{border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:5px;
+    background:var(--paper); padding:14px 16px}
+  .mgroup:nth-child(2){border-top-color:var(--green)}
+  .mgroup:nth-child(3){border-top-color:var(--gold)}
+  .mhead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px}
+  .mname{font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:#000000}
+  .mscore{font-family:var(--mono); font-size:12px; color:#000000}
 
   .answer{font-family:var(--serif); font-size:16.5px; line-height:1.7; margin-top:16px; color:var(--ink)}
   .answer strong{color:var(--ink)}
@@ -181,11 +191,11 @@
     <input type="text" id="q" placeholder="e.g. which energy sources are safest and cleanest?">
     <div class="row">
       <button class="btn" id="searchBtn">Search</button>
-      <span class="hint">retrieves the most similar passages via pgvector</span>
+      <span class="hint">one result from each embedding model — same question, three rankings</span>
     </div>
     <div class="status" id="searchStatus">Searching…</div>
     <div class="err" id="searchErr"></div>
-    <div class="stack" id="searchOut"></div>
+    <div class="compare" id="searchOut"></div>
   </section>
 
   <section>
@@ -264,15 +274,18 @@ async function search(){
   $("#searchErr").classList.remove("on"); $("#searchOut").innerHTML="";
   $("#searchBtn").disabled = true; $("#searchStatus").classList.add("on");
   try{
-    const r = await fetch("/retrieve", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({query:q})});
+    const r = await fetch("/compare", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({query:q, top_k:1})});
     const d = await r.json();
     if(!r.ok) throw new Error(d.detail || "search failed");
-    $("#searchOut").innerHTML = (d.results||[]).map((b,i) => `
-      <div class="book">
-        <div class="t">${i+1}. ${esc(b.title)}</div>
-        <div class="meta">${esc(b.document_id)} · ${esc(d.embedding_model)} · rank ${b.rank}</div>
-        <div class="ex">${esc(b.text)}</div>
-        <div class="cn">[${esc(b.chunk_id)}]</div>
+    $("#searchOut").innerHTML = (d.groups||[]).map(g => `
+      <div class="mgroup">
+        <div class="mhead"><span class="mname">${esc(g.model_name)}</span><span class="mscore">${(g.results[0] ? "similarity " + g.results[0].similarity_score : "")}</span></div>
+        ${(g.results||[]).map(b => `
+          <div class="book">
+            <div class="t">${esc(b.title)}</div>
+            <div class="meta">${esc(b.document_id)} · ${esc(b.chunk_id)}</div>
+            <div class="ex">${esc(b.text)}</div>
+          </div>`).join("") || `<div class="hint" style="margin-top:10px">no result for this model</div>`}
       </div>`).join("") || `<div class="hint" style="margin-top:12px">No passages found.</div>`;
   }catch(e){
     $("#searchErr").textContent = "Search failed — " + e.message; $("#searchErr").classList.add("on");

@@ -16,7 +16,7 @@ import time
 
 from database import MODEL_TABLES
 from database.connection import get_connection
-from models.embedding_models import embed_query
+from models.embedding_models import MODEL_NAMES, MODELS, embed_query
 
 
 def retrieve(query: str, model_name: str, top_k: int = 5) -> list[dict]:
@@ -116,3 +116,39 @@ def retrieve_with_timing(query: str, model_name: str, top_k: int = 5) -> tuple[l
         "vector_search_ms": round(search_ms, 2),
         "total_ms": round(total_ms, 2),
     }
+
+
+def _excerpt(text: str, limit: int = 180) -> str:
+    """Collapse whitespace and truncate a chunk to a short display excerpt."""
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + "…"
+
+
+def retrieve_compare(query: str, top_k: int = 1, models: list[str] | None = None) -> list[dict]:
+    """Retrieve the same query with EVERY model so callers can compare rankings.
+
+    Returns one group per model, each with that model's top-k results (with a
+    short text excerpt and the cosine similarity score attached).
+    """
+    models = models or list(MODELS)
+    groups = []
+    for model_name in models:
+        results = retrieve(query, model_name, top_k)
+        groups.append({
+            "model_key": model_name,
+            "model_name": MODEL_NAMES.get(model_name, model_name),
+            "results": [
+                {
+                    "rank": r["rank"],
+                    "chunk_id": r["chunk_id"],
+                    "document_id": r["document_id"],
+                    "title": r["title"],
+                    "text": _excerpt(r["chunk_text"]),
+                    "similarity_score": r["similarity_score"],
+                }
+                for r in results
+            ],
+        })
+    return groups

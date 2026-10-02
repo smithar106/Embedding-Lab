@@ -39,6 +39,32 @@ class RetrieveResponse(BaseModel):
     results: list[dict] = Field(default_factory=list)
 
 
+class CompareRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=MAX_QUESTION_LENGTH)
+    top_k: int | None = Field(default=None, ge=1, le=5)
+
+
+class CompareResult(BaseModel):
+    rank: int
+    chunk_id: str
+    document_id: str
+    title: str
+    text: str
+    similarity_score: float
+
+
+class CompareGroup(BaseModel):
+    model_key: str
+    model_name: str
+    results: list[CompareResult] = Field(default_factory=list)
+
+
+class CompareResponse(BaseModel):
+    query: str
+    top_k: int
+    groups: list[CompareGroup] = Field(default_factory=list)
+
+
 class ConfigResponse(BaseModel):
     generation_model: str
     embedding_model: str

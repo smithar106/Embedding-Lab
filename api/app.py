@@ -24,11 +24,14 @@ from config import get_settings
 from database.connection import check_connection, close_pool
 from database.library import get_library_stats
 from models.embedding_models import MODELS, embed_query, is_model_loaded
+from retrieval.retriever import retrieve_compare
 from tools.retrieval_tool import retrieval_search
 
 from api.schemas import (
     AskRequest,
     AskResponse,
+    CompareRequest,
+    CompareResponse,
     ConfigResponse,
     HealthResponse,
     LatencyMs,
@@ -197,3 +200,14 @@ def config_endpoint():
 @app.get("/library", response_model=LibraryResponse)
 def library_endpoint():
     return get_library_stats()
+
+
+@app.post("/compare", response_model=CompareResponse)
+def compare_endpoint(req: CompareRequest, request: Request):
+    top_k = req.top_k if req.top_k is not None else 1
+    try:
+        groups = retrieve_compare(req.query, top_k=top_k)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("compare failed for %s: %s", request.state.request_id, exc)
+        raise HTTPException(status_code=502, detail="comparison failed")
+    return CompareResponse(query=req.query, top_k=top_k, groups=groups)

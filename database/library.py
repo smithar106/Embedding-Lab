@@ -8,7 +8,7 @@ update together with no frontend change.
 from __future__ import annotations
 
 from database.connection import get_connection
-from models.embedding_models import MODELS
+from models.embedding_models import MODEL_NAMES, MODELS
 
 # Collection slug -> display name. Kept here (not in the frontend) so the UI
 # always shows the canonical label for whatever is in the database.
@@ -21,9 +21,6 @@ COLLECTION_LABELS = {
     "global-development": "Global Development",
     "uncategorized": "Other",
 }
-
-# Model key -> display name for the cataloging-system section.
-MODEL_LABELS = {"minilm": "MiniLM", "bge": "BGE", "e5": "E5"}
 
 
 def get_library_stats() -> dict:
@@ -89,7 +86,7 @@ def get_library_stats() -> dict:
         "models": [
             {
                 "key": info.key,
-                "name": MODEL_LABELS.get(info.key, info.key),
+                "name": MODEL_NAMES.get(info.key, info.key),
                 "hf_id": info.hf_id,
                 "dim": info.dim,
                 "use": info.use,
