@@ -166,8 +166,8 @@
   <div class="note">
     Every document has been split into <b>identical passages</b> and filed as a
     <b>vector</b> — a point in high-dimensional space where similar meaning sits
-    close together. Search the stacks to <b>retrieve</b> evidence, or ask the
-    reference desk for a <b>grounded answer</b>.
+    close together. Search the stacks to <b>retrieve</b> evidence, and see how
+    each embedding model ranks the same passages.
   </div>
 
   <section>
@@ -186,19 +186,6 @@
     <div class="status" id="searchStatus">Searching…</div>
     <div class="err" id="searchErr"></div>
     <div class="stack" id="searchOut"></div>
-  </section>
-
-  <section>
-    <h2>Ask the Reference Desk</h2>
-    <label class="lbl" for="a">Ask a question</label>
-    <textarea id="a" placeholder="e.g. Which component stores energy in an electric field instead of chemically?"></textarea>
-    <div class="row">
-      <button class="btn" id="askBtn">Ask</button>
-      <span class="hint">the agent decides whether it needs the stacks</span>
-    </div>
-    <div class="status" id="askStatus">Consulting the librarian…</div>
-    <div class="err" id="askErr"></div>
-    <div id="askOut"></div>
   </section>
 
   <section>
@@ -272,13 +259,6 @@ async function loadLibrary(){
   }catch(e){ /* library stats are cosmetic; ignore */ }
 }
 
-function md(s){
-  return esc(s)
-    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
-    .replace(/`(.+?)`/g,"<code>$1</code>")
-    .replace(/\[([A-Za-z0-9_\-]+#\d+)\]/g, (m,n)=>`<sup class="cite"><a href="#cite-${n}">${n}</a></sup>`);
-}
-
 async function search(){
   const q = $("#q").value.trim(); if(!q) return;
   $("#searchErr").classList.remove("on"); $("#searchOut").innerHTML="";
@@ -301,32 +281,8 @@ async function search(){
   }
 }
 
-async function ask(){
-  const q = $("#a").value.trim(); if(!q) return;
-  $("#askErr").classList.remove("on"); $("#askOut").innerHTML="";
-  $("#askBtn").disabled = true; $("#askStatus").classList.add("on");
-  try{
-    const r = await fetch("/ask", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({question:q})});
-    const d = await r.json();
-    if(!r.ok) throw new Error(d.detail || "ask failed");
-    let html = `<div class="answer">${md(d.answer||"(no answer)")}</div>`;
-    if(d.citations && d.citations.length){
-      html += `<div class="cite-list">` + d.citations.map(c=>`<div class="c" id="cite-${c}">↳ <b>[${esc(c)}]</b></div>`).join("") + `</div>`;
-    }
-    const l = d.latency_ms || {};
-    html += `<div class="meta" style="margin-top:12px;font-family:var(--mono)">tool: ${d.tool_used?"used":"not needed"} · ${l.total ?? "—"} ms · ${d.token_usage ? d.token_usage.total_tokens : "—"} tokens</div>`;
-    $("#askOut").innerHTML = html;
-  }catch(e){
-    $("#askErr").textContent = "Ask failed — " + e.message; $("#askErr").classList.add("on");
-  }finally{
-    $("#askBtn").disabled = false; $("#askStatus").classList.remove("on");
-  }
-}
-
 $("#searchBtn").addEventListener("click", search);
 $("#q").addEventListener("keydown", e => { if(e.key==="Enter") search(); });
-$("#askBtn").addEventListener("click", ask);
-$("#a").addEventListener("keydown", e => { if((e.metaKey||e.ctrlKey) && e.key==="Enter") ask(); });
 
 loadLibrary();
 </script>
