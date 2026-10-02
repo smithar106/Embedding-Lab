@@ -11,7 +11,7 @@ venv/
 .env
 
 # Evaluation run artifacts (generated)
-results/*.json
+results/
 
 # OS / editor
 .DS_Store

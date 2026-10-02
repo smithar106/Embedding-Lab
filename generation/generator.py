@@ -35,6 +35,11 @@ def _get_client():
     return OpenAI(api_key=api_key, base_url=base_url)
 
 
+def get_client():
+    """Public client accessor (used by the agent layer)."""
+    return _get_client()
+
+
 def _estimate_cost(usage: dict | None) -> float | None:
     """Estimated cost, only if pricing is explicitly configured via env vars.
 

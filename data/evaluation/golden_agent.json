@@ -1,0 +1,50 @@
+[
+  {
+    "question_id": "a001",
+    "kind": "retrieval",
+    "question": "Which component stores energy in an electric field instead of chemically?",
+    "expected_tool_use": true,
+    "relevant_document_ids": ["capacitor"],
+    "expected_facts": ["capacitor", "electric field"]
+  },
+  {
+    "question_id": "a002",
+    "kind": "retrieval",
+    "question": "What grid-scale technology stores energy by pumping water uphill?",
+    "expected_tool_use": true,
+    "relevant_document_ids": ["pumped-hydro"],
+    "expected_facts": ["pump", "reservoir"]
+  },
+  {
+    "question_id": "a003",
+    "kind": "retrieval",
+    "question": "How do lithium-ion batteries store energy?",
+    "expected_tool_use": true,
+    "relevant_document_ids": ["lithium-ion"],
+    "expected_facts": ["lithium ions", "electrodes"]
+  },
+  {
+    "question_id": "a004",
+    "kind": "direct",
+    "question": "Say hello.",
+    "expected_tool_use": false
+  },
+  {
+    "question_id": "a005",
+    "kind": "direct",
+    "question": "What is two plus two?",
+    "expected_tool_use": false
+  },
+  {
+    "question_id": "a006",
+    "kind": "out_of_corpus",
+    "question": "What is the boiling point of tungsten?",
+    "expected_tool_use": null
+  },
+  {
+    "question_id": "a007",
+    "kind": "out_of_corpus",
+    "question": "Who painted the Mona Lisa?",
+    "expected_tool_use": null
+  }
+]

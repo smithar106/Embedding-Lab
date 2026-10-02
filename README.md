@@ -47,6 +47,13 @@ embedding-lab/
         prompts.py           # grounded prompt + citation format
         generator.py         # shared DeepSeek generation layer
         rag.py               # run_rag: retrieval + generation
+    tools/
+        __init__.py
+        retrieval_tool.py    # retrieval_search() — the tool boundary
+    agent/
+        __init__.py
+        prompts.py           # agent system prompt (tool-or-not decision)
+        agent.py             # minimal agent loop (decide -> execute -> answer)
     data/
         raw/sample/          # tiny TEST documents (clearly labelled)
         raw/hard/            # synthetic harder corpus (lexical vs semantic)
@@ -59,6 +66,9 @@ embedding-lab/
         evaluate_models.py   # Phase 3: golden-question evaluation + benchmark
         compare_rag.py       # Phase 4: one question, full RAG, 3 models
         evaluate_rag.py      # Phase 4: answer metrics + results JSON
+        evaluate_topk.py     # Phase 4.5: top-K sensitivity
+        run_agent.py         # Phase 5: visible agent loop
+        evaluate_agent.py    # Phase 5: tool-selection + answer evaluation
     results/                 # saved evaluation runs (gitignored)
     tests/
 ```
@@ -114,6 +124,10 @@ python scripts/evaluate_rag.py            # answer metrics + results JSON
 
 # Phase 4.5 — top-K sensitivity (K=1,2,3,5) — retrieval vs generation vs cost
 python scripts/evaluate_topk.py
+
+# Phase 5 — the agent/tool boundary
+python scripts/run_agent.py               # visible loop (retrieval / direct / OOV)
+python scripts/evaluate_agent.py          # tool-selection accuracy + answer metrics
 ```
 
 ## Architecture
@@ -399,6 +413,68 @@ retrieved window for every model, so the grounded LLM finds the same evidence.
 The ranking differences only *matter* when they push the relevant evidence out
 of the top-K window, or on genuinely ambiguous queries.
 
+## From RAG to an agent tool
+
+Phase 4/4.5 built the retrieval + generation pipeline. Phase 5 hides it behind
+one function — `retrieval_search()` — and puts a minimal agent in front of it
+that *decides whether it needs that tool at all*.
+
+```
+USER
+  ↓
+AGENT / LLM
+  ↓
+Does this require knowledge retrieval?
+  │
+  ├── NO ─────────────→ answer directly
+  │
+  └── YES
+       ↓
+ retrieval_search()          ← the abstraction boundary
+       ↓
+ EXISTING RAG RETRIEVAL SYSTEM
+       ↓
+ BGE → pgvector → Top-2 chunks
+       ↓
+ tool result (evidence)
+       ↓
+ AGENT / LLM
+       ↓
+ grounded answer
+```
+
+`retrieval_search()` is a **boundary**. Above it, the agent sees only a function
+and a description. Below it live all the implementation details the agent must
+not know about: pgvector, HNSW, embedding dimensions, embedding prefixes, SQL,
+vector tables, chunking, indexing, and cosine similarity. The agent does not
+understand *how* retrieval works — it only knows *that* evidence is available on
+request.
+
+Two responsibilities stay clean:
+
+- **Retriever (the tool):** "find relevant evidence." It returns evidence, never
+  a final answer.
+- **Agent (the LLM):** "decide what to do, and synthesize the answer" from the
+  evidence it is given.
+
+The loop is deliberately explicit (no LangChain/LangGraph/CrewAI/AutoGen):
+
+1. LLM decision — answer directly, or request `retrieval_search` (function call).
+2. deterministic Python executes `retrieval_search()` (the model never runs the
+   retrieval itself).
+3. the tool result is handed back to the LLM.
+4. the LLM produces the final grounded answer, citing the chunks it used.
+
+### Agent evaluation
+
+A small golden dataset measures a new layer — *agent quality*:
+
+- **Tool-selection accuracy** — did the agent call retrieval when it should, and
+  skip it when it shouldn't?
+- **Citation validity** — citations restricted to the chunks the tool returned.
+- **Expected-fact coverage** — did the answer contain the ground-truth facts?
+- **Insufficient-evidence behaviour** — did out-of-corpus questions abstain?
+
 ## What comes from us vs. from Hugging Face
 
 **Our source code** (loader, chunker, indexer, retriever, scripts) contains the
@@ -424,6 +500,9 @@ deterministic chunking, loader normalization, schema dimensions, identical chunk
 IDs across models, top-k count, idempotent re-ingestion, retrieval metrics
 (Recall@K, RR, MRR, Hit Rate), golden-dataset validation, evaluator
 serialization, answer metrics (fact coverage, citation validity, refusal),
-prompt determinism, generation failure handling, and the same-model/same-prompt/
-same-top_k guarantees. The database tests skip automatically when
-PostgreSQL/pgvector is not reachable; generation tests mock the API client.
+prompt determinism, generation failure handling, the same-model/same-prompt/
+same-top_k guarantees, and the tool/agent boundary (structured tool output,
+defaults, argument validation, tool-or-not decisions, tool-result return,
+citation restriction, trace serialization). The database tests skip
+automatically when PostgreSQL/pgvector is not reachable; generation/agent tests
+mock the API client.
