@@ -49,3 +49,38 @@ class HealthResponse(BaseModel):
     status: str
     database: str
     embedding_model: str
+
+
+class CollectionStat(BaseModel):
+    id: str
+    name: str
+    documents: int
+    passages: int
+    topics: list[str] = Field(default_factory=list)
+
+
+class OrganizationStat(BaseModel):
+    name: str
+    documents: int
+    passages: int
+
+
+class ModelStat(BaseModel):
+    key: str
+    name: str
+    hf_id: str
+    dim: int
+    use: str
+
+
+class LibraryTotals(BaseModel):
+    sources: int
+    passages: int
+    collections: int
+
+
+class LibraryResponse(BaseModel):
+    totals: LibraryTotals
+    collections: list[CollectionStat] = Field(default_factory=list)
+    organizations: list[OrganizationStat] = Field(default_factory=list)
+    models: list[ModelStat] = Field(default_factory=list)

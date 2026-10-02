@@ -30,8 +30,8 @@
   header.lib{
     border-bottom:2px solid var(--ink);
     padding:30px 0 22px; margin-bottom:26px;
-    display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap;
   }
+  .brand{display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap}
   .mark{
     width:54px; height:64px; border-radius:3px 6px 6px 3px;
     background:linear-gradient(180deg,var(--accent),#5d2222);
@@ -41,9 +41,11 @@
   .mark::after{content:""; position:absolute; top:0; bottom:0; left:8px; width:2px; background:rgba(255,255,255,.25)}
   header.lib h1{font-family:var(--serif); font-size:30px; margin:0; letter-spacing:.01em; font-weight:700}
   header.lib .tag{color:var(--muted); font-family:var(--serif); font-style:italic; font-size:15px}
-  header.lib .stamp{margin-left:auto; border:2px solid var(--accent); color:var(--accent);
-    font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.18em;
-    padding:7px 14px; transform:rotate(-3deg); border-radius:3px; opacity:.8}
+  .stats{display:flex; gap:0; margin-top:20px; flex-wrap:wrap}
+  .stat{flex:1; min-width:130px; border-right:1px solid var(--line-strong); padding:0 20px}
+  .stat:first-child{padding-left:0} .stat:last-child{border-right:0}
+  .stat .n{font-family:var(--serif); font-size:30px; font-weight:700; line-height:1}
+  .stat .l{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-top:6px}
 
   .note{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--gold);
     border-radius:4px; padding:14px 18px; font-family:var(--serif); font-size:15px; color:var(--ink-soft);
@@ -58,20 +60,42 @@
     color:var(--accent); margin:0 0 18px; display:flex; align-items:center; gap:10px}
   section>h2::after{content:""; flex:1; height:1px; background:var(--line)}
 
-  /* ── The Collections (models) ─────────────────────────────────────────── */
-  .shelf{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  /* ── The Collections ──────────────────────────────────────────────────── */
+  .collections{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  .collection{border:1px solid var(--line); border-radius:5px; background:var(--paper); padding:16px 18px;
+    border-top:4px solid var(--accent)}
+  .collection:nth-child(2){border-top-color:var(--green)}
+  .collection:nth-child(3){border-top-color:var(--gold)}
+  .collection:nth-child(4){border-top-color:#3a5a7a}
+  .collection:nth-child(5){border-top-color:#6d4b8a}
+  .collection:nth-child(6){border-top-color:#8a5a2a}
+  .collection .name{font-family:var(--serif); font-size:18px; font-weight:700; letter-spacing:.02em}
+  .collection .count{font-family:var(--mono); font-size:11.5px; color:var(--muted); margin:4px 0 10px}
+  .collection .topics{display:flex; flex-wrap:wrap; gap:5px}
+  .topic{font-family:var(--mono); font-size:10.5px; border:1px solid var(--line-strong);
+    border-radius:3px; padding:2px 7px; color:var(--ink-soft); background:#fff}
+
+  /* ── Cataloging system ────────────────────────────────────────────────── */
+  .flow{display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:20px}
+  .flow .node{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line-strong);
+    border-radius:4px; padding:6px 16px}
+  .flow .node.em{color:var(--accent); font-weight:700; border-color:var(--accent); background:var(--accent-soft)}
+  .flow .pipe{color:var(--line-strong); font-size:14px}
+  .flow .branches{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+  .models{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
   .volume{border:1px solid var(--line); border-radius:4px; overflow:hidden; background:var(--paper)}
-  .volume .spine{height:12px; background:linear-gradient(90deg,var(--accent),#5d2222)}
+  .volume .spine{height:10px; background:linear-gradient(90deg,var(--accent),#5d2222)}
   .volume:nth-child(2) .spine{background:linear-gradient(90deg,var(--green),#1d3a21)}
   .volume:nth-child(3) .spine{background:linear-gradient(90deg,var(--gold),#6d5a1e)}
-  .volume .body{padding:14px 16px}
-  .volume .name{font-family:var(--serif); font-size:19px; font-weight:700}
-  .volume .hf{font-family:var(--mono); font-size:11px; color:var(--muted); word-break:break-all; margin:4px 0 8px}
-  .volume .row{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+  .volume .body{padding:13px 15px}
+  .volume .name{font-family:var(--serif); font-size:17px; font-weight:700}
+  .volume .hf{font-family:var(--mono); font-size:10.5px; color:var(--muted); word-break:break-all; margin:4px 0 8px}
+  .volume .row{display:flex; gap:8px; flex-wrap:wrap}
   .badge{font-family:var(--mono); font-size:10.5px; border:1px solid var(--line-strong);
     border-radius:3px; padding:2px 7px; color:var(--ink-soft); background:#fff}
   .badge.dim{background:var(--accent-soft); border-color:#dcc2b6; color:var(--accent); font-weight:700}
-  .call{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:10px}
+  .volume .use{font-size:12px; color:var(--muted); margin-top:8px; font-family:var(--serif); font-style:italic}
 
   /* ── Inputs / buttons ─────────────────────────────────────────────────── */
   label.lbl{display:block; font-family:var(--serif); font-size:13px; letter-spacing:.06em;
@@ -116,40 +140,48 @@
 
   footer.foot{margin-top:40px; border-top:1px solid var(--line); padding-top:16px;
     color:var(--muted); font-size:12.5px; font-family:var(--serif); font-style:italic}
+  .sources{margin-top:8px; font-family:var(--mono); font-size:11px; color:var(--muted)}
+  .sources span{white-space:nowrap}
 
-  @media(max-width:720px){ .shelf{grid-template-columns:1fr} }
+  @media(max-width:720px){ .collections,.models{grid-template-columns:1fr} .stat{border-right:0; padding:8px 0} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="lib">
-    <div class="mark">📚</div>
-    <div>
-      <h1>The Embedding Library</h1>
-      <div class="tag">a card catalog for vector space — retrieve &amp; ask, grounded in evidence</div>
+    <div class="brand">
+      <div class="mark">📚</div>
+      <div>
+        <h1>The Embedding Library</h1>
+        <div class="tag">a semantic library of the issues shaping our world</div>
+      </div>
     </div>
-    <div class="stamp">Reference Desk · Open</div>
+    <div class="stats" id="stats">
+      <div class="stat"><div class="n">—</div><div class="l">Passages</div></div>
+      <div class="stat"><div class="n">—</div><div class="l">Sources</div></div>
+      <div class="stat"><div class="n">—</div><div class="l">Collections</div></div>
+    </div>
   </header>
 
   <div class="note">
-    Every document in the stacks has been split into <b>identical passages</b> and filed as a
-    <b>vector</b> — a point in high-dimensional space where similar meaning sits close together.
-    Search the stacks to <b>retrieve</b> evidence, or ask the reference desk for a
-    <b>grounded answer</b>.
+    Every document has been split into <b>identical passages</b> and filed as a
+    <b>vector</b> — a point in high-dimensional space where similar meaning sits
+    close together. Search the stacks to <b>retrieve</b> evidence, or ask the
+    reference desk for a <b>grounded answer</b>.
   </div>
 
   <section>
     <h2>The Collections</h2>
-    <div class="shelf" id="shelf"></div>
+    <div class="collections" id="collections"></div>
   </section>
 
   <section>
     <h2>Search the Stacks</h2>
     <label class="lbl" for="q">Find passages on a topic</label>
-    <input type="text" id="q" placeholder="e.g. stores energy in an electric field">
+    <input type="text" id="q" placeholder="e.g. which energy sources are safest and cleanest?">
     <div class="row">
       <button class="btn" id="searchBtn">Search</button>
-      <span class="hint">retrieves the most similar passages via pgvector (BGE)</span>
+      <span class="hint">retrieves the most similar passages via pgvector</span>
     </div>
     <div class="status" id="searchStatus">Searching…</div>
     <div class="err" id="searchErr"></div>
@@ -169,36 +201,75 @@
     <div id="askOut"></div>
   </section>
 
+  <section>
+    <h2>The Cataloging System</h2>
+    <div class="flow">
+      <div class="node em">One knowledge library</div>
+      <div class="pipe">│</div>
+      <div class="node">identical chunks</div>
+      <div class="pipe">│</div>
+      <div class="branches">
+        <div class="node">MiniLM</div>
+        <div class="node">BGE</div>
+        <div class="node">E5</div>
+      </div>
+      <div class="pipe">│</div>
+      <div class="node">compare retrieval</div>
+    </div>
+    <div class="models" id="models"></div>
+  </section>
+
   <footer class="foot">
-    The Embedding Library — retrieval grounded in real evidence. A question is embedded, compared
-    against the stacks, and answered only from what the search actually returned.
+    <div>The Embedding Library — retrieval grounded in real evidence. A question is
+    embedded, compared against the stacks, and answered only from what the search returned.</div>
+    <div class="sources" id="sources"></div>
   </footer>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => Number(n ?? 0).toLocaleString("en-US");
 
-const MODELS = [
-  {name:"MiniLM", hf:"sentence-transformers/all-MiniLM-L6-v2", dim:384, use:"Symmetric · general similarity"},
-  {name:"BGE", hf:"BAAI/bge-base-en-v1.5", dim:768, use:"Asymmetric · retrieval"},
-  {name:"E5", hf:"intfloat/e5-base-v2", dim:768, use:"Asymmetric · retrieval"},
-];
+async function loadLibrary(){
+  try{
+    const r = await fetch("/library");
+    const lib = await r.json();
+    if(!r.ok) return;
 
-function renderShelf(){
-  $("#shelf").innerHTML = MODELS.map((m,i) => `
-    <div class="volume">
-      <div class="spine"></div>
-      <div class="body">
-        <div class="name">${m.name}</div>
-        <div class="hf">${m.hf}</div>
-        <div class="row">
-          <span class="badge dim">${m.dim}-dim</span>
-          <span class="badge">${esc(m.use)}</span>
+    const t = lib.totals || {};
+    const stats = [
+      [t.passages, "Passages"],
+      [t.sources, "Sources"],
+      [t.collections, "Collections"],
+    ];
+    $("#stats").innerHTML = stats.map(([n,l]) =>
+      `<div class="stat"><div class="n">${fmt(n)}</div><div class="l">${l}</div></div>`).join("");
+
+    const cols = lib.collections || [];
+    $("#collections").innerHTML = cols.map(c => `
+      <div class="collection">
+        <div class="name">${esc(c.name)}</div>
+        <div class="count">${fmt(c.documents)} sources · ${fmt(c.passages)} passages</div>
+        <div class="topics">${(c.topics||[]).map(t => `<span class="topic">${esc(t)}</span>`).join("")}</div>
+      </div>`).join("") || `<div class="hint">No collections yet — run ingestion.</div>`;
+
+    const models = lib.models || [];
+    $("#models").innerHTML = models.map(m => `
+      <div class="volume">
+        <div class="spine"></div>
+        <div class="body">
+          <div class="name">${esc(m.name)}</div>
+          <div class="hf">${esc(m.hf_id)}</div>
+          <div class="row"><span class="badge dim">${m.dim}-dim</span></div>
+          <div class="use">${esc(m.use)}</div>
         </div>
-        <div class="call">call no. EMB-${m.dim} · shelf ${i+1}</div>
-      </div>
-    </div>`).join("");
+      </div>`).join("");
+
+    const orgs = lib.organizations || [];
+    $("#sources").innerHTML = "Sources: " + orgs.map(o =>
+      `<span>${esc(o.name)} (${fmt(o.documents)} sources · ${fmt(o.passages)} passages)</span>`).join(" · ");
+  }catch(e){ /* library stats are cosmetic; ignore */ }
 }
 
 function md(s){
@@ -219,7 +290,7 @@ async function search(){
     $("#searchOut").innerHTML = (d.results||[]).map((b,i) => `
       <div class="book">
         <div class="t">${i+1}. ${esc(b.title)}</div>
-        <div class="meta">${esc(b.document_id)} · ${esc(b.embedding_model)} · rank ${b.rank}</div>
+        <div class="meta">${esc(b.document_id)} · ${esc(d.embedding_model)} · rank ${b.rank}</div>
         <div class="ex">${esc(b.text)}</div>
         <div class="cn">[${esc(b.chunk_id)}]</div>
       </div>`).join("") || `<div class="hint" style="margin-top:12px">No passages found.</div>`;
@@ -257,7 +328,7 @@ $("#q").addEventListener("keydown", e => { if(e.key==="Enter") search(); });
 $("#askBtn").addEventListener("click", ask);
 $("#a").addEventListener("keydown", e => { if((e.metaKey||e.ctrlKey) && e.key==="Enter") ask(); });
 
-renderShelf();
+loadLibrary();
 </script>
 </body>
 </html>

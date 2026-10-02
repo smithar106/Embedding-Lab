@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from agent.agent import run_agent
 from config import get_settings
 from database.connection import check_connection, close_pool
+from database.library import get_library_stats
 from models.embedding_models import MODELS, embed_query, is_model_loaded
 from tools.retrieval_tool import retrieval_search
 
@@ -31,6 +32,7 @@ from api.schemas import (
     ConfigResponse,
     HealthResponse,
     LatencyMs,
+    LibraryResponse,
     RetrieveRequest,
     RetrieveResponse,
 )
@@ -190,3 +192,8 @@ def config_endpoint():
         embedding_model=settings.embedding_model,
         top_k=settings.top_k,
     )
+
+
+@app.get("/library", response_model=LibraryResponse)
+def library_endpoint():
+    return get_library_stats()
