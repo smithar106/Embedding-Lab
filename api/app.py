@@ -13,10 +13,11 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from agent.agent import run_agent
 from config import get_settings
@@ -59,6 +60,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Embedding-Lab", version="1.0.0", lifespan=lifespan)
+
+_STATIC_DIR = Path(__file__).parent / "static"
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    return FileResponse(_STATIC_DIR / "index.html")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=204)
 
 # CORS is configurable via the CORS_ORIGINS env var (comma-separated).
 app.add_middleware(
